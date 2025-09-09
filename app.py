@@ -39,7 +39,7 @@ if "last_update" not in st.session_state:
 with st.sidebar:
     st.header("⚙️ Parameters")
     ppa_base_price  = st.number_input("PPA Baseload Price (€/MWh)", value=99.2, key="ppa_base")
-    ppa_base_qty    = st.number_input("PPA Baseload quantity (MW)", value=20.0, key="ppa_qty")
+    ppa_base_qty    = st.number_input("PPA Baseload quantity (MW)", value=20, key="ppa_qty")
     ppa_solar_price = st.number_input("PPA PV Price (€/MWh)", value=70.0, key="ppa_solar")
     swap_price      = st.number_input("Swap BESS Price (€/MWh)", value=40.0, key="swap")
     bess_size       = st.number_input("BESS size (MW)", value=40, key="size")
