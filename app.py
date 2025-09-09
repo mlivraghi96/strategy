@@ -46,8 +46,11 @@ with st.sidebar:
     bess_pe         = st.number_input("BESS E/P ratio (h)", value=4, key="ep")
     bess_eff        = st.number_input("BESS efficiency", value=0.87, key="eff")
     
-    if st.button("🔄 Reset", type="secondary"):
+    if st.button("⏮️ Reset", type="secondary"):
         st.session_state.prezzi = prices[:]
+        st.session_state.last_update = time.time()
+        st.rerun()
+    if st.button("🔄 Update", type="secondary"):
         st.session_state.last_update = time.time()
         st.rerun()
 
