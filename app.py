@@ -332,7 +332,7 @@ with col4:
     st.metric(
         label="🔋 Swap BESS",
         value=f"€ {pnl_swap:,.2f}",
-        delta=f"{spread:.2f} EUR/MWh",
+        delta=f"{spread - swap_price:.2f} EUR/MWh",
         delta_color="off"
     )
 
