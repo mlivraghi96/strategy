@@ -94,7 +94,7 @@ with chart_container:
         }}
     </style>
     <div id="chartContainer">
-        <div id="status">Aggiornato!</div>
+        <div id="status">Updated!</div>
         <canvas id="chart" width="900" height="400"></canvas>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
@@ -205,7 +205,7 @@ with chart_container:
                             displayColors: false,
                             callbacks: {{
                                 label: function(context) {{
-                                    return 'Prezzo: €' + context.parsed.y.toFixed(2) + '/MWh';
+                                    return 'Price: €' + context.parsed.y.toFixed(2) + '/MWh';
                                 }}
                             }}
                         }},
