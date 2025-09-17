@@ -83,7 +83,7 @@ if "last_update" not in st.session_state:
     st.session_state.last_update = 0
 
 # ---- Container per il grafico e il polling
-col1, col2 = st.columns([3, 1])
+col1, col2 = st.columns([1, 1])
 
 with col1:
     # Placeholder per il grafico
@@ -420,7 +420,7 @@ if st.button("Show PV chart"):
     
     # Tight layout for bet
     
-    col1, col2 = st.columns([1, 2])  # first column narrower
+    col1, col2 = st.columns([1, 1])  # first column narrower
     with col1:
         st.pyplot(fig2)
 
