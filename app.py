@@ -233,7 +233,7 @@ with chart_container:
                             displayColors: false,
                             callbacks: {{
                                 label: function(context) {{
-                                    return 'Prezzo: €' + context.parsed.y.toFixed(2) + '/MWh';
+                                    return 'Price: €' + context.parsed.y.toFixed(2) + '/MWh';
                                 }}
                             }}
                         }},
