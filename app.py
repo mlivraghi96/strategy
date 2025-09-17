@@ -4,47 +4,69 @@ from streamlit_js_eval import streamlit_js_eval
 import time
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+from datetime import datetime, date
 
 st.set_page_config(layout="wide")
-st.title("📈 PV + BESS Strategy")
+st.title("PV + BESS Strategy")
 
 # ---- Dati iniziali
 default_data_str = "105.000000,96.890000,94.370000,94.020000,94.600000,100.000000,110.304680,125.710000,127.400000,104.000000,94.990000,88.890000,81.700000,82.740000,88.280000,84.114960,94.970000,105.100000,121.987090,152.941150,159.723640,123.594350,115.350120,110.796190"
 default_prices = [float(x) for x in default_data_str.split(",")]
-pv_profile = [0,0,0,0,0,0,25.57948906,54.67371386,69.94165438,77.54612584,80.71999784,82.77323408,83.116512,83.83018936,85.77769024,86.72839536,84.73501656,77.86880278,63.14636576,21.77632165,0,0,0,0]
 
 # Tabelle modificabili (senza indice, due colonne)
 
-target_avg_price = st.number_input("Average price (€/MWh)", min_value=20.0, max_value=300.0, value=np.mean(default_prices))
+#target_avg_price = st.number_input("Average price (€/MWh)", min_value=20.0, max_value=300.0, value=np.mean(default_prices))
 
-scaling_pv = st.number_input("Scaling factor PV (%)", min_value=0.0, max_value=150.0, value=100.0)
-factor_pv = scaling_pv / 100
+#default_date = date(2025, 8, 13)
+#selected_date = st.date_input("Pick PV production date (2025)", value = default_date)
 
-pv = np.array(pv_profile) * factor_pv
+pv_data = pd.read_csv("..\\cluster8760.csv")
+pv_data['Date'] = pv_data['Date'].apply(lambda x: datetime.strptime(x, '%m/%d/%Y'))
+pv_data['Date'] = pv_data['Date'].apply(lambda x: x.date())
+#pv_profile = list(pv_data[pv_data['Date'] == selected_date]['MWh'])
+
+#scaling_pv = st.number_input("Scaling factor PV (%)", min_value=0.0, max_value=150.0, value=100.0)
+#factor_pv = scaling_pv / 100
+
+#pv = np.array(pv_profile) #* factor_pv
 
 # Ricalcolo curva prezzi con nuovo prezzo medio
-scaling_factor = target_avg_price / np.mean(np.array(default_prices))
-adjusted_prices = np.array(default_prices) * scaling_factor
+#scaling_factor = target_avg_price / np.mean(np.array(default_prices))
+#adjusted_prices = np.array(default_prices) * scaling_factor
 
-prices = list(adjusted_prices)
+#prices = list(adjusted_prices)
 
 # ---- Stato prezzi (Python)
-if "prezzi" not in st.session_state:
-    st.session_state.prezzi = prices[:]
+# if "prezzi" not in st.session_state:
+#     st.session_state.prezzi = prices[:]
 
-if "last_update" not in st.session_state:
-    st.session_state.last_update = 0
+# if "last_update" not in st.session_state:
+#     st.session_state.last_update = 0
 
 # ---- Parametri contrattuali (sidebar)
 with st.sidebar:
-    st.header("⚙️ Parameters")
-    ppa_base_price  = st.number_input("PPA Baseload Price (€/MWh)", value=99.2, key="ppa_base")
-    ppa_base_qty    = st.number_input("PPA Baseload quantity (MW)", value=20, key="ppa_qty")
+    st.header("⚙️ PPA Parameters")
+    ppa_base_price  = st.number_input("PPA Baseload Price (€/MWh)", value=96.0, key="ppa_base")
+    ppa_base_qty    = st.number_input("PPA Baseload quantity (MW)", value=18, key="ppa_qty")
     ppa_solar_price = st.number_input("PPA PV Price (€/MWh)", value=70.0, key="ppa_solar")
     swap_price      = st.number_input("Swap BESS Price (€/MWh)", value=40.0, key="swap")
-    bess_size       = st.number_input("BESS size (MW)", value=40, key="size")
+    bess_size       = st.number_input("BESS size (MW)", value=40.0, key="size")
     bess_pe         = st.number_input("BESS E/P ratio (h)", value=4, key="ep")
-    bess_eff        = st.number_input("BESS efficiency", value=0.87, key="eff")
+    
+    st.header("Market Parameters")
+    
+    target_avg_price = st.number_input("Average price (€/MWh)", min_value=20.0, max_value=300.0, value=np.mean(default_prices))
+    
+    scaling_factor = target_avg_price / np.mean(np.array(default_prices))
+    adjusted_prices = np.array(default_prices) * scaling_factor
+
+    prices = list(adjusted_prices)
+
+    default_date = date(2025, 8, 13)
+    selected_date = st.date_input("PV production date (2025)", value = default_date)
+    pv_profile = list(pv_data[pv_data['Date'] == selected_date]['MWh'])
+    pv = np.array(pv_profile)
     
     if st.button("⏮️ Reset curve", type="secondary"):
         st.session_state.prezzi = prices[:]
@@ -53,6 +75,12 @@ with st.sidebar:
     if st.button("🔄 Update calc", type="secondary"):
         st.session_state.last_update = time.time()
         st.rerun()
+        
+if "prezzi" not in st.session_state:
+    st.session_state.prezzi = prices[:]
+
+if "last_update" not in st.session_state:
+    st.session_state.last_update = 0
 
 # ---- Container per il grafico e il polling
 col1, col2 = st.columns([3, 1])
@@ -183,7 +211,7 @@ with chart_container:
                                 font: {{ size: 14, weight: 'bold' }}
                             }},
                             min: 0,
-                            max: 200,
+                            max: {np.max(st.session_state.prezzi) + 30},
                             grid: {{
                                 display: true,
                                 color: 'rgba(0, 0, 0, 0.05)'
@@ -205,7 +233,7 @@ with chart_container:
                             displayColors: false,
                             callbacks: {{
                                 label: function(context) {{
-                                    return 'Price: €' + context.parsed.y.toFixed(2) + '/MWh';
+                                    return 'Prezzo: €' + context.parsed.y.toFixed(2) + '/MWh';
                                 }}
                             }}
                         }},
@@ -294,9 +322,10 @@ pnl_solar = np.array(prezzi).dot(np.array(pv)) - ppa_solar_price * np.sum(np.arr
 # Swap con BESS (acquisto)
 sort_prices = np.sort(prezzi)
 spread = np.mean(sort_prices[-int(bess_pe):]) - np.mean(sort_prices[:int(bess_pe)]) 
-pnl_swap = (spread - swap_price) * (bess_pe*bess_size*bess_eff)
+pnl_swap = (spread - swap_price) * (bess_pe*bess_size)
 
 total_pnl = pnl_base + pnl_solar + pnl_swap
+unit_pnl = total_pnl / (24*ppa_base_qty)
 
 #########################################
 
@@ -308,7 +337,7 @@ with col1:
     st.metric(
         label="📊 P&L Total", 
         value=f"€ {total_pnl:,.2f}",
-        delta=f"{'Profit' if total_pnl >= 0 else 'Loss'}",
+        delta=f"{unit_pnl: ,.2f} EUR/MWh",
         delta_color=delta_color
     )
 
@@ -347,15 +376,53 @@ with col5:
 if st.button("Show PV chart"):
 
     # Grafico Produzione PV
+    # st.subheader("🌞 PV production")
+    # hours = np.arange(24)
+    # fig2, ax2 = plt.subplots(figsize=(10, 4))
+    # ax2.plot(hours, np.array(pv), label="PV", marker='x', color='tab:orange')
+    # ax2.set_xlabel("hour")
+    # ax2.set_ylabel("MWh")
+    # ax2.grid(True)
+    # ax2.legend()
+    # st.pyplot(fig2)
+    
     st.subheader("🌞 PV production")
+
+    # Choose a modern style
+    plt.style.use("seaborn-v0_8-whitegrid")
     hours = np.arange(24)
-    fig2, ax2 = plt.subplots(figsize=(10, 4))
-    ax2.plot(hours, np.array(pv), label="PV", marker='x', color='tab:orange')
-    ax2.set_xlabel("hour")
-    ax2.set_ylabel("MWh")
-    ax2.grid(True)
-    ax2.legend()
-    st.pyplot(fig2)
+    # Create figure with higher resolution
+    fig2, ax2 = plt.subplots(figsize=(10, 4), dpi=120)
+    
+    # Plot with improved styling
+    ax2.plot(
+        hours,
+        pv,
+        label="PV",
+        marker='o',
+        markersize=6,
+        linewidth=2,
+        color='tab:orange'
+    )
+    
+    # Labels and title
+    ax2.set_title("Hourly PV Production", fontsize=16, fontweight='bold')
+    ax2.set_xlabel("Hour of Day", fontsize=12)
+    ax2.set_ylabel("MWh", fontsize=12)
+    
+    # Grid and ticks
+    ax2.grid(True, which='both', linestyle='--', linewidth=0.7, alpha=0.7)
+    ax2.set_xticks(range(0, 24, 2))
+    ax2.tick_params(axis='both', labelsize=10)
+    
+    # Legend
+    ax2.legend(frameon=True, loc='upper right')
+    
+    # Tight layout for bet
+    
+    col1, col2 = st.columns([1, 2])  # first column narrower
+    with col1:
+        st.pyplot(fig2)
 
 # ---- Auto-refresh per mantenere aggiornati i dati
 st.markdown(
