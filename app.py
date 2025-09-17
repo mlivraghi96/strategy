@@ -21,7 +21,7 @@ default_prices = [float(x) for x in default_data_str.split(",")]
 #default_date = date(2025, 8, 13)
 #selected_date = st.date_input("Pick PV production date (2025)", value = default_date)
 
-pv_data = pd.read_csv("..\\cluster8760.csv")
+pv_data = pd.read_csv("cluster8760.csv")
 pv_data['Date'] = pv_data['Date'].apply(lambda x: datetime.strptime(x, '%m/%d/%Y'))
 pv_data['Date'] = pv_data['Date'].apply(lambda x: x.date())
 #pv_profile = list(pv_data[pv_data['Date'] == selected_date]['MWh'])
