@@ -424,6 +424,8 @@ if st.button("Show PV chart"):
     with col1:
         st.pyplot(fig2)
 
+    st.write("PV production: ", round(np.sum(pv),2)," MWh")
+
 # ---- Auto-refresh per mantenere aggiornati i dati
 st.markdown(
     """
