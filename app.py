@@ -51,7 +51,7 @@ with st.sidebar:
     ppa_base_qty    = st.number_input("PPA Baseload quantity (MW)", value=18, key="ppa_qty")
     ppa_solar_price = st.number_input("PPA PV Price (€/MWh)", value=70.0, key="ppa_solar")
     swap_price      = st.number_input("Swap BESS Price (€/MWh)", value=40.0, key="swap")
-    bess_size       = st.number_input("BESS size (MW)", value=40.0, key="size")
+    bess_size       = st.number_input("BESS size (MW)", value=40, key="size")
     bess_pe         = st.number_input("BESS E/P ratio (h)", value=4, key="ep")
     
     st.header("Market Parameters")
